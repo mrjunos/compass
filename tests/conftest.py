@@ -85,10 +85,10 @@ def client_with_docs():
          patch("backend.main.init_db"), \
          patch(
              "backend.chat.litellm.acompletion",
-             new=AsyncMock(side_effect=[
-                 _make_llm_response("Web development services start at USD 1,500."),
-                 _make_llm_response("null"),  # proactive suggestion → None
-             ])
+             new=AsyncMock(return_value=_make_llm_response(
+                 "Web development services start at USD 1,500.\n"
+                 "💡 SUGERENCIA: Consider documenting the revision process for delivered projects."
+             ))
          ), \
          patch("backend.chat.save_message"), \
          patch("backend.chat.get_session_messages", return_value=[]):

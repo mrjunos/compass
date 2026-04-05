@@ -1,3 +1,4 @@
+import json
 import logging
 import litellm
 
@@ -6,15 +7,18 @@ from .indexer import CompassIndexer
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """Eres Compass, el cerebro operativo de la empresa.
-Responde usando exclusivamente el contexto de los documentos de la empresa proporcionados.
-Cita siempre el documento y la sección de donde viene la información (ej: [servicios.md — Paquetes]).
-Si no encuentras la respuesta en los documentos, dilo claramente y sugiere qué documento podría tenerla."""
+SUGGESTION_MARKER = "💡 SUGERENCIA:"
 
-SUGGESTION_PROMPT = """Eres un asistente que ayuda a mejorar la base de conocimiento de una empresa.
-Dado el contexto de una pregunta y su respuesta, sugiere en UNA oración qué información adicional
-debería documentarse o qué gap de conocimiento existe.
-Si no hay una sugerencia útil, responde exactamente: null"""
+SYSTEM_PROMPT = f"""Eres Compass, el cerebro operativo de la empresa.
+Responde usando exclusivamente el contexto de los documentos de la empresa proporcionados.
+Cita siempre el documento y la sección de donde viene la información (ej: [servicios.md — Sección]).
+Si no encuentras la respuesta en los documentos, dilo claramente.
+
+Al final de tu respuesta, si identificas un gap de conocimiento — algo que debería estar documentado \
+pero no está — agrégalo en esta línea exacta:
+{SUGGESTION_MARKER} <una sola oración sobre qué documentar>
+
+Si no hay gap relevante, no incluyas esa línea."""
 
 
 async def process_chat(
@@ -26,7 +30,7 @@ async def process_chat(
     # 1. Save user message
     save_message(session_id, "user", question)
 
-    # 2. Build context from PageIndex summaries (already generated during indexing)
+    # 2. Build context from PageIndex summaries
     sources = []
     context_parts = []
 
@@ -50,19 +54,19 @@ async def process_chat(
     messages = [
         {"role": "system", "content": f"{SYSTEM_PROMPT}\n\nCONTEXTO:\n{context}"}
     ]
-    for msg in history[:-1]:  # exclude the message we just saved
+    for msg in history[:-1]:
         messages.append({"role": msg["role"], "content": msg["content"]})
     messages.append({"role": "user", "content": question})
 
-    # 5. LLM response
+    # 5. Single LLM call — answer + optional suggestion embedded
     response = await litellm.acompletion(model=model, messages=messages)
-    answer = response.choices[0].message.content
+    raw = response.choices[0].message.content
 
-    # 6. Save assistant response
+    # 6. Parse answer and suggestion from the same response
+    answer, suggestion = _parse_response(raw)
+
+    # 7. Save assistant response (clean answer only)
     save_message(session_id, "assistant", answer)
-
-    # 7. Proactive suggestion
-    suggestion = await _get_suggestion(question, answer, model) if context_parts else None
 
     return {
         "answer": answer,
@@ -72,10 +76,18 @@ async def process_chat(
     }
 
 
+def _parse_response(raw: str) -> tuple[str, str | None]:
+    """Split the LLM response into answer and optional suggestion."""
+    if SUGGESTION_MARKER in raw:
+        parts = raw.split(SUGGESTION_MARKER, 1)
+        answer = parts[0].strip()
+        suggestion = parts[1].strip() if len(parts) > 1 else None
+        return answer, suggestion or None
+    return raw.strip(), None
+
+
 def _extract_summaries(structure_json: str) -> str:
     """Recursively extract all node summaries from PageIndex structure JSON."""
-    import json
-
     def _collect(nodes: list, parts: list):
         for node in nodes:
             if node.get("summary"):
@@ -90,20 +102,3 @@ def _extract_summaries(structure_json: str) -> str:
         return "\n\n".join(parts)
     except Exception:
         return ""
-
-
-async def _get_suggestion(question: str, answer: str, model: str) -> str | None:
-    try:
-        response = await litellm.acompletion(
-            model=model,
-            messages=[
-                {"role": "system", "content": SUGGESTION_PROMPT},
-                {"role": "user", "content": f"Pregunta: {question}\n\nRespuesta: {answer}"},
-            ],
-            max_tokens=120,
-        )
-        result = response.choices[0].message.content.strip()
-        return None if result.lower() == "null" else result
-    except Exception as e:
-        logger.warning(f"Suggestion failed: {e}")
-        return None

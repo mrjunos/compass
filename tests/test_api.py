@@ -75,6 +75,19 @@ class TestChat:
         r = client_with_docs.post("/chat", json={"session_id": "s1"})
         assert r.status_code == 422
 
+    def test_suggestion_returned_when_present(self, client_with_docs):
+        data = client_with_docs.post(
+            "/chat", json={"question": "What are your services?"}
+        ).json()
+        assert data["suggestion"] is not None
+        assert len(data["suggestion"]) > 0
+
+    def test_answer_does_not_contain_suggestion_marker(self, client_with_docs):
+        data = client_with_docs.post(
+            "/chat", json={"question": "What are your services?"}
+        ).json()
+        assert "💡 SUGERENCIA:" not in data["answer"]
+
 
 # ---------------------------------------------------------------------------
 # POST /upload
