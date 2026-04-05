@@ -1,3 +1,8 @@
+# Compass — runtime data (never commit)
+data/index/        # PageIndex workspace (generated)
+data/docs/         # uploaded documents (may be sensitive)
+data/compass.db    # SQLite database
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
