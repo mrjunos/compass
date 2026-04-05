@@ -5,7 +5,7 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, Request, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -27,28 +27,29 @@ WORKSPACE       = Path(os.getenv("COMPASS_WORKSPACE", "./data/index"))
 
 os.environ["OLLAMA_API_BASE"] = OLLAMA_API_BASE
 
-indexer = CompassIndexer(model=COMPASS_MODEL, workspace=str(WORKSPACE))
-_watcher = None
+
+def get_indexer(request: Request) -> CompassIndexer:
+    return request.app.state.indexer
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _watcher
     init_db()
     DOCS_PATH.mkdir(parents=True, exist_ok=True)
     WORKSPACE.mkdir(parents=True, exist_ok=True)
 
-    # Index any docs already in /data/docs
+    app.state.indexer = CompassIndexer(model=COMPASS_MODEL, workspace=str(WORKSPACE))
+
     for f in DOCS_PATH.iterdir():
         if f.suffix.lower() in {".pdf", ".md", ".markdown", ".txt"}:
-            indexer.index_document(str(f))
+            app.state.indexer.index_document(str(f))
 
-    _watcher = start_watcher(str(DOCS_PATH), indexer)
-    logger.info(f"Compass ready — {len(indexer.documents)} doc(s) indexed")
+    app.state.watcher = start_watcher(str(DOCS_PATH), app.state.indexer)
+    logger.info(f"Compass ready — {len(app.state.indexer.documents)} doc(s) indexed")
     yield
-    if _watcher:
-        _watcher.stop()
-        _watcher.join()
+    if app.state.watcher:
+        app.state.watcher.stop()
+        app.state.watcher.join()
 
 
 app = FastAPI(
@@ -72,7 +73,8 @@ class ChatRequest(BaseModel):
 
 
 @app.get("/health")
-def health():
+def health(request: Request):
+    indexer = get_indexer(request)
     return {
         "status": "ok",
         "model": COMPASS_MODEL,
@@ -81,7 +83,8 @@ def health():
 
 
 @app.post("/chat")
-async def chat(body: ChatRequest):
+async def chat(body: ChatRequest, request: Request):
+    indexer = get_indexer(request)
     if not indexer.documents:
         raise HTTPException(
             status_code=400,
@@ -96,7 +99,8 @@ async def chat(body: ChatRequest):
 
 
 @app.post("/upload", status_code=201)
-async def upload(file: UploadFile = File(...)):
+async def upload(file: UploadFile = File(...), request: Request = None):
+    indexer = get_indexer(request)
     ext = Path(file.filename).suffix.lower()
     if ext not in {".pdf", ".md", ".markdown", ".txt"}:
         raise HTTPException(status_code=400, detail="Formatos soportados: PDF, Markdown, TXT")
@@ -110,5 +114,6 @@ async def upload(file: UploadFile = File(...)):
 
 
 @app.get("/documents")
-def list_documents():
+def list_documents(request: Request):
+    indexer = get_indexer(request)
     return {"documents": indexer.list_documents(), "total": len(indexer.documents)}

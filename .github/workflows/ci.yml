@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  test:
+    name: Run tests (Python 3.11)
+    if: github.event_name == 'push' || !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+        env:
+          OLLAMA_API_BASE: "http://localhost:11434"
+          COMPASS_MODEL: "ollama/test-model"
+          COMPASS_DOCS_PATH: "/tmp/compass_docs"
+          COMPASS_WORKSPACE: "/tmp/compass_index"
