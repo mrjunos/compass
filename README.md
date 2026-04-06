@@ -100,7 +100,7 @@ Response:
 {
   "answer": "The client onboarding process takes 5–7 business days... [onboarding-clientes — Step 1]",
   "sources": [
-    {"doc_name": "onboarding-clientes", "doc_id": "...", "pages": "1-10"}
+    {"doc_name": "onboarding-clientes", "doc_id": "..."}
   ],
   "suggestion": "Consider documenting the offboarding process as well.",
   "session_id": "my-session"
@@ -181,6 +181,18 @@ compass/
 ├── requirements.txt
 └── README.md
 ```
+
+---
+
+## Tests
+
+26 integration tests covering all API endpoints. No Ollama, no disk I/O, no SQLite required — all external dependencies are mocked.
+
+```bash
+pytest tests/ -v
+```
+
+CI runs on every push and pull request to `main` via GitHub Actions.
 
 ---
 
