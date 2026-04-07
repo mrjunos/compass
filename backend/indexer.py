@@ -13,6 +13,7 @@ SUPPORTED_EXTENSIONS = {".pdf", ".md", ".markdown", ".txt"}
 class CompassIndexer:
     def __init__(self, model: str, workspace: str):
         self.client = PageIndexClient(model=model, workspace=workspace)
+        self._structure_cache: dict[str, str] = {}
 
     def index_document(self, filepath: str) -> str | None:
         path = Path(filepath)
@@ -33,10 +34,13 @@ class CompassIndexer:
         logger.info(f"Indexing: {path.name}")
         doc_id = self.client.index(str(path))
         logger.info(f"Done: {path.name} → {doc_id}")
+        self._structure_cache.pop(doc_id, None)  # invalidate on re-index
         return doc_id
 
     def get_structure(self, doc_id: str) -> str:
-        return self.client.get_document_structure(doc_id)
+        if doc_id not in self._structure_cache:
+            self._structure_cache[doc_id] = self.client.get_document_structure(doc_id)
+        return self._structure_cache[doc_id]
 
     def get_page_content(self, doc_id: str, pages: str) -> str:
         return self.client.get_page_content(doc_id, pages)
