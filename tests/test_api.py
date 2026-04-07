@@ -138,6 +138,30 @@ class TestUpload:
         )
         assert r.status_code == 201
 
+    def test_path_traversal_filename_is_sanitized(self, client_empty):
+        r = client_empty.post(
+            "/upload",
+            files={"file": ("../../etc/passwd.md", b"# hacked", "text/markdown")},
+        )
+        assert r.status_code == 201
+        assert r.json()["filename"] == "passwd.md"
+
+    def test_413_when_file_too_large(self, client_empty):
+        big = b"x" * (50 * 1024 * 1024 + 1)
+        r = client_empty.post(
+            "/upload",
+            files={"file": ("big.md", big, "text/markdown")},
+        )
+        assert r.status_code == 413
+
+    def test_file_at_size_limit_is_accepted(self, client_empty):
+        at_limit = b"x" * (50 * 1024 * 1024)
+        r = client_empty.post(
+            "/upload",
+            files={"file": ("limit.md", at_limit, "text/markdown")},
+        )
+        assert r.status_code == 201
+
 
 # ---------------------------------------------------------------------------
 # GET /documents
