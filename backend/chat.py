@@ -59,7 +59,7 @@ async def process_chat(
     messages.append({"role": "user", "content": question})
 
     # 5. Single LLM call — answer + optional suggestion embedded
-    response = await litellm.acompletion(model=model, messages=messages)
+    response = await litellm.acompletion(model=model, messages=messages, timeout=60)
     raw = response.choices[0].message.content
 
     # 6. Parse answer and suggestion from the same response

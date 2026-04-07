@@ -18,6 +18,9 @@ def init_db():
                 indexed     BOOLEAN DEFAULT FALSE
             )
         """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_messages_session_id ON messages(session_id)
+        """)
 
 
 @contextmanager
@@ -45,7 +48,7 @@ def get_session_messages(session_id: str, limit: int = 10) -> list:
         rows = conn.execute(
             """SELECT role, content FROM messages
                WHERE session_id = ?
-               ORDER BY timestamp DESC LIMIT ?""",
+               ORDER BY id DESC LIMIT ?""",
             (session_id, limit),
         ).fetchall()
     return [{"role": r["role"], "content": r["content"]} for r in reversed(rows)]

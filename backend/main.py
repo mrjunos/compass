@@ -59,11 +59,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.getenv("COMPASS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
+    if o.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
 )
 
 
@@ -98,19 +104,28 @@ async def chat(body: ChatRequest, request: Request):
     )
 
 
+MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
+
+
 @app.post("/upload", status_code=201)
 async def upload(file: UploadFile = File(...), request: Request = None):
     indexer = get_indexer(request)
-    ext = Path(file.filename).suffix.lower()
+
+    safe_name = Path(file.filename).name
+    ext = Path(safe_name).suffix.lower()
     if ext not in {".pdf", ".md", ".markdown", ".txt"}:
         raise HTTPException(status_code=400, detail="Formatos soportados: PDF, Markdown, TXT")
 
-    dest = DOCS_PATH / file.filename
+    contents = await file.read()
+    if len(contents) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="Archivo demasiado grande. Máximo 50 MB.")
+
+    dest = DOCS_PATH / safe_name
     with open(dest, "wb") as f:
-        shutil.copyfileobj(file.file, f)
+        f.write(contents)
 
     doc_id = indexer.index_document(str(dest))
-    return {"doc_id": doc_id, "filename": file.filename}
+    return {"doc_id": doc_id, "filename": safe_name}
 
 
 @app.get("/documents")
