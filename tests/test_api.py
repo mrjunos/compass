@@ -3,6 +3,52 @@ Integration tests for the Compass API.
 No Ollama, no disk I/O, no SQLite required — all external calls are mocked.
 """
 
+import pytest
+from unittest.mock import patch
+
+
+# ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
+
+class TestAuth:
+    def test_no_key_required_when_env_unset(self, client_empty):
+        """Auth is disabled by default — all requests pass through."""
+        assert client_empty.get("/health").status_code == 200
+
+    def test_valid_key_is_accepted(self, client_empty):
+        with patch("backend.main.API_KEY", "secret"):
+            r = client_empty.get("/health", headers={"X-API-Key": "secret"})
+        assert r.status_code == 200
+
+    def test_invalid_key_returns_401(self, client_empty):
+        with patch("backend.main.API_KEY", "secret"):
+            r = client_empty.get("/health", headers={"X-API-Key": "wrong"})
+        assert r.status_code == 401
+
+    def test_missing_key_returns_401(self, client_empty):
+        with patch("backend.main.API_KEY", "secret"):
+            r = client_empty.get("/health")
+        assert r.status_code == 401
+
+    def test_auth_applies_to_chat(self, client_with_docs):
+        with patch("backend.main.API_KEY", "secret"):
+            r = client_with_docs.post("/chat", json={"question": "Hi"})
+        assert r.status_code == 401
+
+    def test_auth_applies_to_upload(self, client_empty):
+        with patch("backend.main.API_KEY", "secret"):
+            r = client_empty.post(
+                "/upload",
+                files={"file": ("doc.md", b"# Test", "text/markdown")},
+            )
+        assert r.status_code == 401
+
+    def test_auth_applies_to_documents(self, client_empty):
+        with patch("backend.main.API_KEY", "secret"):
+            r = client_empty.get("/documents")
+        assert r.status_code == 401
+
 
 # ---------------------------------------------------------------------------
 # GET /health

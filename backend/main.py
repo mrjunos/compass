@@ -5,7 +5,8 @@ from pathlib import Path
 from contextlib import asynccontextmanager
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, UploadFile, File, HTTPException
+from fastapi import FastAPI, Request, UploadFile, File, HTTPException, Security
+from fastapi.security.api_key import APIKeyHeader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -24,6 +25,14 @@ OLLAMA_API_BASE = os.getenv("OLLAMA_API_BASE", "http://localhost:11434")
 COMPASS_MODEL   = os.getenv("COMPASS_MODEL", "ollama/gemma4:e4b")
 DOCS_PATH       = Path(os.getenv("COMPASS_DOCS_PATH", "./data/docs"))
 WORKSPACE       = Path(os.getenv("COMPASS_WORKSPACE", "./data/index"))
+API_KEY         = os.getenv("COMPASS_API_KEY")  # None = auth disabled
+
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+async def verify_api_key(key: str = Security(_api_key_header)):
+    if API_KEY and key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key.")
 
 os.environ["OLLAMA_API_BASE"] = OLLAMA_API_BASE
 
@@ -57,6 +66,7 @@ app = FastAPI(
     description="El cerebro operativo de tu empresa.",
     version="0.2.0",
     lifespan=lifespan,
+    dependencies=[Security(verify_api_key)],
 )
 
 ALLOWED_ORIGINS = [
