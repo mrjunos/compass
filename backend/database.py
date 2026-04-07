@@ -18,6 +18,9 @@ def init_db():
                 indexed     BOOLEAN DEFAULT FALSE
             )
         """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_messages_session_id ON messages(session_id)
+        """)
 
 
 @contextmanager
