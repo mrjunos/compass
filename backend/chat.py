@@ -100,5 +100,6 @@ def _extract_summaries(structure_json: str) -> str:
         parts = []
         _collect(tree if isinstance(tree, list) else [tree], parts)
         return "\n\n".join(parts)
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Failed to extract summaries from structure JSON: {e}")
         return ""

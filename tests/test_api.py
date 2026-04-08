@@ -136,6 +136,44 @@ class TestChat:
 
 
 # ---------------------------------------------------------------------------
+# _extract_summaries (unit)
+# ---------------------------------------------------------------------------
+
+class TestExtractSummaries:
+    def test_returns_empty_string_on_invalid_json(self, caplog):
+        import logging
+        from backend.chat import _extract_summaries
+
+        with caplog.at_level(logging.WARNING, logger="backend.chat"):
+            result = _extract_summaries("not valid json{{{")
+
+        assert result == ""
+        assert "Failed to extract summaries" in caplog.text
+
+    def test_extracts_nested_summaries(self):
+        from backend.chat import _extract_summaries
+        import json
+
+        structure = json.dumps([{
+            "title": "Root",
+            "summary": "Root summary",
+            "nodes": [
+                {"title": "Child", "summary": "Child summary", "nodes": []}
+            ]
+        }])
+        result = _extract_summaries(structure)
+        assert "Root summary" in result
+        assert "Child summary" in result
+
+    def test_returns_empty_string_on_empty_nodes(self):
+        from backend.chat import _extract_summaries
+        import json
+
+        result = _extract_summaries(json.dumps([{"title": "T", "nodes": []}]))
+        assert result == ""
+
+
+# ---------------------------------------------------------------------------
 # POST /upload
 # ---------------------------------------------------------------------------
 
