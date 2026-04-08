@@ -69,7 +69,7 @@ Reply with ONLY the document names, one per line. Pick 1-3 most relevant documen
         selected = []
         for line in raw.splitlines():
             name = line.strip().lstrip("- ").strip()
-            if name in all_names:
+            if name in all_names and all_names[name] not in selected:
                 selected.append(all_names[name])
             else:
                 # Fuzzy: check if any doc name is contained in the line
