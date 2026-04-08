@@ -51,6 +51,23 @@ class TestAuth:
 
 
 # ---------------------------------------------------------------------------
+# Rate limiting
+# ---------------------------------------------------------------------------
+
+class TestRateLimit:
+    def test_rate_limit_handler_is_registered(self, client_empty):
+        """Verify slowapi's 429 handler is registered on the app."""
+        from slowapi.errors import RateLimitExceeded
+        from backend.main import app
+        assert RateLimitExceeded in app.exception_handlers
+
+    def test_limiter_attached_to_app(self, client_empty):
+        """Verify the limiter is attached to app.state so slowapi can find it."""
+        from backend.main import app, limiter
+        assert app.state.limiter is limiter
+
+
+# ---------------------------------------------------------------------------
 # GET /health
 # ---------------------------------------------------------------------------
 
