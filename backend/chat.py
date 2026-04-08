@@ -21,6 +21,85 @@ pero no está — agrégalo en esta línea exacta:
 Si no hay gap relevante, no incluyas esa línea."""
 
 
+async def _route_documents(
+    question: str,
+    indexer: CompassIndexer,
+    model: str,
+    history: list,
+) -> list[str]:
+    """Select which documents are relevant to the question using a lightweight LLM call."""
+    doc_manifest = []
+    for doc_id, doc in indexer.documents.items():
+        doc_name = doc.get("doc_name", doc_id)
+        try:
+            structure_json = indexer.get_structure(doc_id)
+            first_summary = _extract_first_summary(structure_json)
+            doc_manifest.append(f"- {doc_name}: {first_summary}")
+        except Exception:
+            doc_manifest.append(f"- {doc_name}: (no summary available)")
+
+    if not doc_manifest:
+        return []
+
+    # Include recent conversation context so the router understands follow-ups
+    conv_context = ""
+    if history:
+        recent = history[-4:]  # last 2 exchanges
+        conv_lines = [f"{m['role']}: {m['content'][:200]}" for m in recent]
+        conv_context = f"\n\nRecent conversation:\n" + "\n".join(conv_lines)
+
+    routing_prompt = f"""Given these available documents:
+{chr(10).join(doc_manifest)}
+{conv_context}
+
+Which documents are relevant to answer this question: "{question}"
+
+Reply with ONLY the document names, one per line. Pick 1-3 most relevant documents. If the question is a follow-up to the conversation, pick documents relevant to the ongoing topic."""
+
+    try:
+        response = await litellm.acompletion(
+            model=model,
+            messages=[{"role": "user", "content": routing_prompt}],
+            timeout=15,
+        )
+        raw = response.choices[0].message.content.strip()
+
+        # Match returned names against actual doc names
+        all_names = {doc.get("doc_name", did): did for did, doc in indexer.documents.items()}
+        selected = []
+        for line in raw.splitlines():
+            name = line.strip().lstrip("- ").strip()
+            if name in all_names and all_names[name] not in selected:
+                selected.append(all_names[name])
+            else:
+                # Fuzzy: check if any doc name is contained in the line
+                for doc_name, did in all_names.items():
+                    if doc_name.lower() in line.lower() and did not in selected:
+                        selected.append(did)
+
+        if selected:
+            logger.info(f"Router selected {len(selected)} docs: {[indexer.documents[d].get('doc_name', d) for d in selected]}")
+            return selected
+    except Exception as e:
+        logger.warning(f"Document routing failed, falling back to all docs: {e}")
+
+    # Fallback: return all
+    return list(indexer.documents.keys())
+
+
+def _extract_first_summary(structure_json: str) -> str:
+    """Extract just the first/top-level summary for routing (lightweight)."""
+    try:
+        tree = json.loads(structure_json)
+        nodes = tree if isinstance(tree, list) else [tree]
+        if nodes and nodes[0].get("summary"):
+            summary = nodes[0]["summary"]
+            return summary[:150] + "..." if len(summary) > 150 else summary
+    except Exception:
+        pass
+    return "(no summary)"
+
+
 async def process_chat(
     question: str,
     session_id: str,
@@ -30,11 +109,20 @@ async def process_chat(
     # 1. Save user message
     save_message(session_id, "user", question)
 
-    # 2. Build context from PageIndex summaries
+    # 2. Get recent chat history
+    history = get_session_messages(session_id, limit=10)
+
+    # 3. Route: select relevant documents (lightweight LLM call)
+    relevant_doc_ids = await _route_documents(question, indexer, model, history[:-1])
+
+    # 4. Build context from only the relevant documents
     sources = []
     context_parts = []
 
-    for doc_id, doc in indexer.documents.items():
+    for doc_id in relevant_doc_ids:
+        doc = indexer.documents.get(doc_id)
+        if not doc:
+            continue
         try:
             doc_name = doc.get("doc_name", doc_id)
             structure_json = indexer.get_structure(doc_id)
@@ -45,10 +133,7 @@ async def process_chat(
         except Exception as e:
             logger.warning(f"Context build failed for {doc_id}: {e}")
 
-    # 3. Get recent chat history
-    history = get_session_messages(session_id, limit=6)
-
-    # 4. Build messages
+    # 5. Build messages
     context = "\n\n---\n\n".join(context_parts) if context_parts else "No se encontró información relevante en los documentos."
 
     messages = [
