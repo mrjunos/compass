@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Compass - Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#e4e1e9",
+                        "inverse-primary": "#005bbf",
+                        "surface-dim": "#131318",
+                        "surface-variant": "#35343a",
+                        "outline": "#8c909e",
+                        "on-primary-container": "#00285b",
+                        "surface-container-low": "#1b1b20",
+                        "secondary": "#cebdff",
+                        "on-tertiary-fixed-variant": "#005230",
+                        "on-secondary-fixed-variant": "#4f319c",
+                        "surface-bright": "#39383e",
+                        "inverse-on-surface": "#303036",
+                        "background": "#131318",
+                        "surface-container": "#1f1f25",
+                        "on-primary": "#002f68",
+                        "secondary-fixed-dim": "#cebdff",
+                        "on-secondary": "#381385",
+                        "on-tertiary-container": "#00311b",
+                        "on-tertiary": "#003920",
+                        "surface": "#131318",
+                        "on-secondary-fixed": "#21005e",
+                        "tertiary-fixed-dim": "#49e095",
+                        "surface-tint": "#acc7ff",
+                        "secondary-fixed": "#e8ddff",
+                        "on-error-container": "#ffdad6",
+                        "on-background": "#e4e1e9",
+                        "secondary-container": "#4f319c",
+                        "tertiary-fixed": "#6bfdaf",
+                        "inverse-surface": "#e4e1e9",
+                        "on-surface-variant": "#c2c6d5",
+                        "tertiary-container": "#00a666",
+                        "on-tertiary-fixed": "#002110",
+                        "on-error": "#690005",
+                        "on-secondary-container": "#bea8ff",
+                        "surface-container-highest": "#35343a",
+                        "surface-container-lowest": "#0e0e13",
+                        "on-primary-fixed": "#001a40",
+                        "error": "#ffb4ab",
+                        "error-container": "#93000a",
+                        "primary-fixed": "#d7e2ff",
+                        "on-primary-fixed-variant": "#004492",
+                        "tertiary": "#49e095",
+                        "primary-fixed-dim": "#acc7ff",
+                        "primary-container": "#508ff8",
+                        "primary": "#acc7ff",
+                        "surface-container-high": "#2a292f",
+                        "outline-variant": "#424753"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Space Grotesk"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #131318;
+            color: #e4e1e9;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #42475333;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="antialiased overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<aside class="h-screen w-[240px] fixed left-0 top-0 bg-[#1b1b20] dark:bg-[#1b1b20] flex flex-col h-full p-4 border-r border-[#424753]/20 z-50">
+<div class="flex items-center gap-3 mb-8 px-2">
+<div class="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">explore</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tighter text-[#e4e1e9]">Compass</h1>
+<p class="text-[10px] uppercase tracking-widest text-[#909094] font-medium">Local Intelligence</p>
+</div>
+</div>
+<button class="mb-6 flex items-center justify-center gap-2 bg-[#2a292f] hover:bg-[#35343a] text-primary py-2.5 rounded-lg transition-all duration-200 active:scale-[0.98] font-semibold text-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+            New Session
+        </button>
+<nav class="space-y-1 flex-grow">
+<!-- Active State: Chat -->
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#acc7ff] font-semibold bg-[#2a292f] rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+<span class="font-['Inter'] text-sm tracking-tight">Chat</span>
+</a>
+<!-- Inactive State: Knowledge Base -->
+<a class="flex items-center gap-3 px-3 py-2.5 text-[#909094] hover:text-[#e4e1e9] hover:bg-[#2a292f] rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined">database</span>
+<span class="font-['Inter'] text-sm tracking-tight">Knowledge Base</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-[#424753]/10">
+<div class="flex items-center gap-3 px-2">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="professional male headshot with neutral expression and soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqxwOq-CjURgqz4LTftHydIrmsb9j_ImhcUbzXlku12PW5ywo1iijIwf79iPUPj1Wk8uzCB3W5MCnEvdLqjnRE6ptYLmROL3TJSGSJfdQAVpJ9HdvhpDnoT9x7F5lLdLKAoq0JlNDeSi6h_UJO7fOda9jFZpbCUkwfuFBaUA3GkCkvJcda0s4ExHdoALPY1eisH1DHE_0HW01Srr0Mi2NBy4WFXZh6COgLJOQ8ssq6sn0JmFP69tipIbA4rXtscIz0pK2tz4S8K8xz"/>
+</div>
+<div class="flex-grow min-w-0">
+<p class="text-xs font-semibold truncate">Alex Miller</p>
+<p class="text-[10px] text-outline truncate">Intelligence Lead</p>
+</div>
+<span class="material-symbols-outlined text-outline text-lg cursor-pointer hover:text-on-surface transition-colors">settings</span>
+</div>
+</div>
+</aside>
+<!-- TopAppBar (Shared Component) -->
+<header class="h-[56px] sticky top-0 z-40 bg-[#131318]/70 backdrop-blur-xl flex items-center justify-between px-6 ml-[240px] w-[calc(100%-240px)] border-b border-[#424753]/15">
+<div class="flex items-center gap-2">
+<span class="font-['Inter'] text-sm uppercase tracking-widest font-medium text-[#e4e1e9]">Chat</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-lowest rounded-full border border-outline-variant/10">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="font-label text-[10px] text-on-surface-variant font-medium tracking-wider">CONNECTED</span>
+</div>
+<button class="text-[#acc7ff] hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">sensors</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[240px] h-[calc(100vh-56px)] flex flex-col relative bg-surface-container-lowest overflow-hidden">
+<!-- Chat Area -->
+<section class="flex-grow overflow-y-auto pt-8 pb-32 px-6">
+<div class="max-w-[780px] mx-auto space-y-10">
+<!-- Empty State (Optional depending on interaction flow, but requested) -->
+<div class="flex flex-col items-center justify-center py-20 text-center space-y-6">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high flex items-center justify-center mb-2 shadow-2xl">
+<span class="material-symbols-outlined text-3xl text-primary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div>
+<h2 class="text-2xl font-semibold tracking-tight text-on-surface mb-2">What would you like to know about your company?</h2>
+<p class="text-outline max-w-md mx-auto text-sm leading-relaxed">Access cross-departmental data and local intelligence through our neural-indexed knowledge base.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-3">
+<button class="bg-secondary-container/20 text-secondary border border-secondary/20 px-4 py-2 rounded-full text-xs font-label hover:bg-secondary-container/40 transition-colors">
+                            Analyze Q3 Revenue leakage
+                        </button>
+<button class="bg-secondary-container/20 text-secondary border border-secondary/20 px-4 py-2 rounded-full text-xs font-label hover:bg-secondary-container/40 transition-colors">
+                            Summarize policy updates
+                        </button>
+<button class="bg-secondary-container/20 text-secondary border border-secondary/20 px-4 py-2 rounded-full text-xs font-label hover:bg-secondary-container/40 transition-colors">
+                            System architecture docs
+                        </button>
+</div>
+</div>
+<!-- Assistant Message Example -->
+<div class="flex flex-col items-start gap-4">
+<div class="flex items-center gap-2 ml-1">
+<div class="w-6 h-6 rounded bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-xs text-on-primary-container" style="font-variation-settings: 'FILL' 1;">explore</span>
+</div>
+<span class="text-[10px] font-label font-medium uppercase tracking-widest text-outline">Compass Intelligence</span>
+</div>
+<div class="bg-surface-container-low border border-outline-variant/10 p-5 rounded-xl rounded-tl-none max-w-[90%]">
+<div class="prose prose-invert prose-sm">
+<p class="text-sm leading-relaxed text-on-surface">Based on the latest internal documentation and repository logs, the <strong class="text-primary">Project Titan</strong> architecture has shifted to a micro-frontend approach. </p>
+<ul class="list-disc pl-5 mt-3 space-y-2 text-on-surface-variant">
+<li>The core services are containerized using standard Docker images.</li>
+<li>API gateways now use the new authentication handshake protocols.</li>
+<li>Metadata indexing is handled locally by the Compass Node.</li>
+</ul>
+</div>
+<!-- Source Chips -->
+<div class="mt-6 pt-4 border-t border-outline-variant/5">
+<p class="text-[10px] font-label uppercase tracking-tighter text-outline mb-3">Retrieved Sources</p>
+<div class="flex flex-wrap gap-2">
+<div class="flex items-center gap-1.5 px-2 py-1 bg-surface-container-highest rounded text-[11px] text-on-surface-variant border border-outline-variant/10 hover:border-primary/30 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-sm">description</span>
+                                    architecture_v2_final.pdf
+                                </div>
+<div class="flex items-center gap-1.5 px-2 py-1 bg-surface-container-highest rounded text-[11px] text-on-surface-variant border border-outline-variant/10 hover:border-primary/30 cursor-pointer transition-colors">
+<span class="material-symbols-outlined text-sm">description</span>
+                                    onboarding_wiki_main.md
+                                </div>
+</div>
+</div>
+<!-- Suggestion Blocks -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+<div class="p-3 border border-secondary/20 bg-secondary-container/5 rounded-lg hover:bg-secondary-container/10 cursor-pointer transition-all">
+<p class="text-[10px] font-label text-secondary uppercase mb-1">Deep Dive</p>
+<p class="text-xs text-on-surface font-medium">Show me the auth protocol diagrams</p>
+</div>
+<div class="p-3 border border-secondary/20 bg-secondary-container/5 rounded-lg hover:bg-secondary-container/10 cursor-pointer transition-all">
+<p class="text-[10px] font-label text-secondary uppercase mb-1">Impact Analysis</p>
+<p class="text-xs text-on-surface font-medium">How does this affect existing client SDKs?</p>
+</div>
+</div>
+</div>
+</div>
+<!-- User Message Example -->
+<div class="flex flex-col items-end gap-3">
+<div class="bg-primary-container/10 border border-primary/20 p-4 rounded-xl rounded-tr-none max-w-[80%]">
+<p class="text-sm text-on-surface leading-relaxed">Can you verify if the authentication handshake is compatible with our legacy SAML provider? Specifically looking at version 3.2.4.</p>
+</div>
+<div class="flex items-center gap-2 mr-1">
+<span class="text-[10px] font-label font-medium uppercase tracking-widest text-outline">Sent 14:02</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Input Section -->
+<section class="absolute bottom-0 left-0 right-0 p-6 glass-panel border-t border-outline-variant/10">
+<div class="max-w-[780px] mx-auto relative">
+<div class="bg-surface-container-low rounded-xl shadow-2xl border border-outline-variant/20 focus-within:border-primary/40 transition-colors duration-300">
+<div class="p-2 flex items-end gap-2">
+<button class="p-2 text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<textarea class="flex-grow bg-transparent border-none focus:ring-0 text-on-surface text-sm py-2 px-1 resize-none placeholder:text-outline/50" placeholder="Message Compass..." rows="1"></textarea>
+<button class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">arrow_upward</span>
+</button>
+</div>
+</div>
+<div class="mt-3 flex justify-between items-center px-1">
+<div class="flex items-center gap-4">
+<p class="font-label text-[10px] text-outline/60 tracking-wider">
+                            SESSION: <span class="text-on-surface-variant font-medium">XYZ-8902</span>
+</p>
+<p class="font-label text-[10px] text-outline/60 tracking-wider">
+                            MESSAGES: <span class="text-on-surface-variant font-medium">12</span>
+</p>
+</div>
+<p class="font-label text-[10px] text-outline/40">SHIFT + ENTER FOR NEW LINE</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Decor for "Nocturnal Architect" vibe -->
+<div class="fixed top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+<div class="fixed bottom-[-10%] left-[20%] w-[30%] h-[30%] bg-secondary/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+</body></html>
