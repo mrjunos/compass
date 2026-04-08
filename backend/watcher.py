@@ -3,9 +3,9 @@ from pathlib import Path
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-logger = logging.getLogger(__name__)
+from .indexer import SUPPORTED_EXTENSIONS
 
-SUPPORTED_EXTENSIONS = {".pdf", ".md", ".markdown", ".txt"}
+logger = logging.getLogger(__name__)
 
 
 class DocumentHandler(FileSystemEventHandler):

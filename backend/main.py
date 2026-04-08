@@ -16,7 +16,7 @@ from slowapi.errors import RateLimitExceeded
 load_dotenv()
 
 from .database import init_db
-from .indexer import CompassIndexer
+from .indexer import CompassIndexer, SUPPORTED_EXTENSIONS
 from .watcher import start_watcher
 from .chat import process_chat
 
@@ -79,7 +79,7 @@ async def lifespan(app: FastAPI):
     app.state.indexer = CompassIndexer(model=COMPASS_MODEL, workspace=str(WORKSPACE))
 
     for f in DOCS_PATH.iterdir():
-        if f.suffix.lower() in {".pdf", ".md", ".markdown", ".txt"}:
+        if f.suffix.lower() in SUPPORTED_EXTENSIONS:
             app.state.indexer.index_document(str(f))
 
     app.state.watcher = start_watcher(str(DOCS_PATH), app.state.indexer)
@@ -170,7 +170,7 @@ async def upload(file: UploadFile = File(...), request: Request = None):
 
     safe_name = Path(file.filename).name
     ext = Path(safe_name).suffix.lower()
-    if ext not in {".pdf", ".md", ".markdown", ".txt"}:
+    if ext not in SUPPORTED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Formatos soportados: PDF, Markdown, TXT")
 
     contents = await file.read()
