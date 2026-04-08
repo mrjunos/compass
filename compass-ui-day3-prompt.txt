@@ -1,0 +1,159 @@
+COMPASS — UI GENERATION PROMPT (Day 3 Build)
+=============================================
+Generate a complete, functional React 19 + Vite + TypeScript application.
+This is NOT a mockup — it must connect to a real backend API.
+
+---
+
+CONTEXT
+-------
+Compass is a local AI knowledge assistant for small businesses.
+The backend is already built (FastAPI at localhost:8000).
+Today we are building the frontend: 3 screens + shell.
+
+---
+
+DESIGN SYSTEM (use these tokens exactly)
+-----------------------------------------
+
+Colors:
+  --compass-void:      #0A0A0F    (app background)
+  --compass-surface:   #12121A    (card/panel bg)
+  --compass-elevated:  #1C1C27    (modals, dropdowns)
+  --compass-border:    #2A2A3A    (subtle borders)
+  --compass-muted:     #3D3D52    (disabled, placeholder)
+  --compass-text-dim:  #8888A8    (secondary labels)
+  --compass-text:      #E8E8F0    (primary text)
+  --compass-white:     #F5F5FF    (headings)
+  --compass-blue:      #4F8EF7    (primary actions)
+  --compass-blue-dim:  #1A3A7A    (hover states)
+  --compass-green:     #3DD68C    (success, indexed)
+  --compass-amber:     #F7B84F    (warning, pending)
+  --compass-red:       #F75F5F    (error, delete)
+  --compass-purple:    #A78BFA    (suggestions, insights)
+
+Typography: Inter (sans-serif), monospace: JetBrains Mono
+  Body: 15px/1.6 weight 400
+  Labels: 13px/1.5 weight 500
+  Headings: 22px/1.3 weight 600
+
+Radius: inputs 6px, cards 10px, modals 16px, badges 9999px
+Spacing: 8px base scale (4, 8, 12, 16, 20, 24, 32, 40, 48, 64)
+
+Styling: Tailwind CSS with CSS custom properties for tokens
+Icons: Lucide React (outline style)
+
+---
+
+BACKEND API (already running at http://localhost:8000)
+------------------------------------------------------
+
+GET /health
+  → { "status": "ok", "documents_indexed": number }
+
+POST /chat
+  Headers: { "X-API-Key": string } (optional, from env)
+  Body: { "question": string, "session_id": string }
+  → { "answer": string, "sources": [{"doc_name": string, "doc_id": string}], "suggestion": string | null, "session_id": string }
+
+POST /upload
+  Headers: { "X-API-Key": string } (optional)
+  Body: FormData with "file" field
+  → { "filename": string, "doc_id": string, "message": string }
+
+GET /documents
+  Headers: { "X-API-Key": string } (optional)
+  → { "documents": [{"doc_id": string, "doc_name": string}] }
+
+---
+
+WHAT TO BUILD (3 screens + shell)
+----------------------------------
+
+1. SHELL (layout)
+   - Left sidebar (240px, fixed):
+     - Top: Compass logo (compass needle icon from Lucide, --compass-blue) + "Compass" wordmark
+     - Nav items: Chat (MessageSquare icon), Knowledge Base (FolderOpen icon)
+     - Active state: left border 2px --compass-blue, bg rgba(79,142,247,0.15)
+     - Hover: bg rgba(79,142,247,0.08)
+     - Bottom: small "v0.2" version tag in --compass-text-dim
+   - Main content area: fluid, right of sidebar
+   - Top bar (56px): page title left, health status indicator right
+     (green dot + "Connected" or red dot + "Disconnected" — call GET /health on mount)
+   - Use React Router for navigation between screens
+
+2. CHAT SCREEN (primary, default route: /)
+   - This is the most important screen. It must feel fast and clean.
+   - Chat panel centered, max-width 780px
+   - Messages area (scrollable, flex-grow):
+     - Empty state: "What would you like to know about your company?" centered in --compass-text-dim
+     - User messages: right-aligned, bg --compass-blue-dim, border 1px rgba(79,142,247,0.3), radius 16px 16px 4px 16px
+     - Assistant messages: left-aligned, bg --compass-surface, border 1px --compass-border, radius 16px 16px 16px 4px
+     - Inside assistant message:
+       a) Answer text (render markdown: bold, code, lists)
+       b) Sources row below answer (separated by 1px line):
+          - "Sources" label in --text-xs --compass-text-dim
+          - Pill badges for each source: "📄 {doc_name}" in small chips
+       c) Suggestion block (only if suggestion is not null):
+          - Left border 3px --compass-purple
+          - bg rgba(167,139,250,0.07)
+          - "💡 {suggestion text}" in --text-sm
+     - Loading state: 3 pulsing dots in --compass-blue while waiting for response
+   - Input area (sticky bottom):
+     - Textarea with auto-resize (max 4 lines)
+     - Placeholder: "Ask anything about your company..."
+     - Send button inside textarea (right side), circular 32px
+       - --compass-blue when text present, --compass-muted when empty
+       - Icon: ArrowUp from Lucide
+     - Submit on Enter (Shift+Enter for newline)
+   - Session management:
+     - Generate a random session_id on first load, persist in state
+     - Show "Session: {id} · {n} messages" below input in --text-xs --compass-text-dim
+   - Auto-scroll to bottom on new message
+
+3. KNOWLEDGE BASE SCREEN (route: /knowledge)
+   - Header: "Knowledge Base" title + "Upload document" primary button (Upload icon)
+   - Stats bar: pill badges showing "{n} Documents" — fetch from GET /documents on mount
+   - Document grid (3 columns desktop, 2 tablet, 1 mobile, gap 16px):
+     - Each card (--compass-surface, radius 10px, border 1px --compass-border):
+       - File type icon (FileText from Lucide) + doc_name (weight 600)
+       - "Indexed" green badge (bottom)
+       - Hover: border-color --compass-blue, translateY(-2px) transition
+   - Upload modal (triggered by "Upload document" button):
+     - Full-screen overlay with backdrop blur
+     - Centered card (520px)
+     - Drag-and-drop zone: dashed border, 200px height
+       - Icon: Upload from Lucide
+       - "Drop PDF, Markdown, TXT or DOCX here"
+       - "or click to browse"
+     - On file drop/select: show filename + spinner + "Indexing..."
+     - On success (POST /upload returns): green checkmark + "Indexed" + refresh document list
+     - On error: red X + error message
+     - Close button top-right
+   - Empty state: large FileText icon + "No documents yet" + "Upload your first document" button
+
+---
+
+TECHNICAL REQUIREMENTS
+----------------------
+- React 19 + Vite + TypeScript
+- Tailwind CSS v4 for styling
+- React Router v7 for navigation
+- Lucide React for icons
+- Use fetch() for API calls (no axios needed)
+- Render markdown in chat responses (use react-markdown)
+- All API calls should handle errors gracefully (show toast or inline error)
+- Toast notifications: bottom-right, auto-dismiss 4s
+  - Success: green left border
+  - Error: red left border
+- Store session_id and messages in React state (no persistence needed yet)
+- The app should work immediately when pointed at the backend at localhost:8000
+- CORS is already configured on the backend for localhost:5173
+
+DO NOT BUILD:
+- Settings screen (not needed yet)
+- Onboarding flow (not needed yet)
+- Decisions, Insights, or Alerts screens
+- Authentication/login
+- Dark/light theme toggle
+- Mobile bottom tab bar

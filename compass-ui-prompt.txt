@@ -1,0 +1,542 @@
+COMPASS — COMPLETE UI DESIGN PROMPT
+=====================================
+For use with AI UI generation systems (v0, Lovable, Bolt, etc.)
+
+---
+
+PRODUCT OVERVIEW
+----------------
+Compass is the operational brain of a small company. It ingests company documents (PDFs, Markdown, TXT), indexes them with a hierarchical tree structure, and lets the owner ask questions in natural language with cited answers. It proactively suggests what to document next.
+
+Primary user: the owner of a 1–10 person company. They use it daily to ask questions, upload docs, and track decisions. Every screen must feel fast, calm, and focused — no clutter, no enterprise bloat.
+
+---
+
+DESIGN SYSTEM
+-------------
+
+### Color Palette
+
+```
+--compass-void:      #0A0A0F   /* app background */
+--compass-surface:   #12121A   /* card / panel bg */
+--compass-elevated:  #1C1C27   /* modals, dropdowns */
+--compass-border:    #2A2A3A   /* subtle borders */
+--compass-muted:     #3D3D52   /* disabled, placeholder */
+--compass-text-dim:  #8888A8   /* secondary labels */
+--compass-text:      #E8E8F0   /* primary text */
+--compass-white:     #F5F5FF   /* headings */
+
+--compass-blue:      #4F8EF7   /* primary actions */
+--compass-blue-dim:  #1A3A7A   /* button bg hover */
+--compass-green:     #3DD68C   /* success, indexed */
+--compass-amber:     #F7B84F   /* warning, pending */
+--compass-red:       #F75F5F   /* error, delete */
+--compass-purple:    #A78BFA   /* suggestion, insight */
+```
+
+### Typography
+
+```
+Font family: "Inter" (sans-serif) — fallback: system-ui
+Monospace: "JetBrains Mono" — for code, IDs, timestamps
+
+Scale:
+  --text-xs:   11px / 1.4
+  --text-sm:   13px / 1.5
+  --text-base: 15px / 1.6
+  --text-lg:   18px / 1.5
+  --text-xl:   22px / 1.3
+  --text-2xl:  28px / 1.2
+  --text-3xl:  36px / 1.15
+
+Weights: 400 (body), 500 (label), 600 (subheading), 700 (heading)
+```
+
+### Spacing Scale (8px base)
+
+```
+--space-1:  4px
+--space-2:  8px
+--space-3:  12px
+--space-4:  16px
+--space-5:  20px
+--space-6:  24px
+--space-8:  32px
+--space-10: 40px
+--space-12: 48px
+--space-16: 64px
+```
+
+### Border Radius
+
+```
+--radius-sm:  6px   (inputs, tags)
+--radius-md:  10px  (cards, panels)
+--radius-lg:  16px  (modals)
+--radius-xl:  24px  (floating elements)
+--radius-full: 9999px (badges, avatars)
+```
+
+### Shadows
+
+```
+--shadow-sm:  0 1px 3px rgba(0,0,0,0.4)
+--shadow-md:  0 4px 16px rgba(0,0,0,0.5)
+--shadow-lg:  0 8px 32px rgba(0,0,0,0.6)
+--glow-blue:  0 0 20px rgba(79,142,247,0.25)
+--glow-purple:0 0 20px rgba(167,139,250,0.2)
+```
+
+### Component Patterns
+
+**Primary Button**
+- bg: --compass-blue, text: white, radius: --radius-sm
+- hover: bg lightens 10%, box-shadow: --glow-blue
+- active: scale(0.97)
+- disabled: opacity 0.4, cursor not-allowed
+
+**Input / Textarea**
+- bg: --compass-surface, border: 1px solid --compass-border
+- focus: border-color --compass-blue, box-shadow: 0 0 0 3px rgba(79,142,247,0.15)
+- placeholder: --compass-text-dim
+- border-radius: --radius-sm
+
+**Card**
+- bg: --compass-surface, border: 1px solid --compass-border
+- border-radius: --radius-md
+- padding: --space-5 or --space-6
+
+**Badge / Tag**
+- Small pill: --radius-full, font-weight 500, --text-xs
+- Colors: green (indexed), amber (pending), blue (default), red (error)
+
+**Sidebar Nav Item**
+- hover: bg rgba(79,142,247,0.08)
+- active: bg rgba(79,142,247,0.15), left border 2px solid --compass-blue
+- icon + label, 40px height, --radius-sm
+
+---
+
+LAYOUT
+------
+
+### Global Shell
+
+Left sidebar (240px, fixed) + main content area (fluid).
+Mobile: sidebar collapses to bottom tab bar (5 icons).
+
+**Sidebar contents:**
+- Top: Compass logo (compass needle icon, 20px, --compass-blue) + wordmark
+- Nav links: Chat, Knowledge Base, Decisions, Insights, Settings
+- Bottom: Company name + avatar (first 2 letters, circular), version tag
+
+**Top bar (inside main area):**
+- Page title (left), action buttons (right)
+- Height: 56px, border-bottom: 1px solid --compass-border
+
+---
+
+SCREENS
+-------
+
+## SCREEN 1 — ONBOARDING FLOW
+
+Multi-step setup. Shown only on first run. Dark background, centered card (max-width 520px).
+
+**Step 1: Welcome**
+- Large compass needle SVG animation (slow rotation, glowing blue trail)
+- Headline: "Meet Compass" (--text-3xl, --compass-white)
+- Subtext: "Your company's operational brain. Let's get it set up." (--text-base, --compass-text-dim)
+- CTA button: "Get started →" (primary, full-width)
+
+**Step 2: Upload first document**
+- Headline: "Start with one document"
+- Subtext: "Drop your service catalog, team guide, or any company doc."
+- Large drop zone (dashed border --compass-border, bg --compass-surface, 200px height)
+  - Icon: document with up-arrow
+  - Label: "Drop PDF, Markdown or TXT here"
+  - Secondary: "or click to browse"
+- On file drop: file name appears with a spinner, then green checkmark + "Indexed"
+- CTA: "Continue" (disabled until file is indexed)
+
+**Step 3: Test it**
+- Headline: "Ask your first question"
+- Pre-filled suggestion chips below: "What services do you offer?", "Who's on the team?", "What's the onboarding process?"
+- Chat input at bottom (same as main chat UI)
+- On submit: shows answer with source citation
+- CTA: "Go to Compass" (takes user to main chat)
+
+**Progress indicator:** 3 dots at bottom of card (filled = completed, outlined = pending)
+
+---
+
+## SCREEN 2 — CHAT (PRIMARY INTERFACE)
+
+This is the main screen. Used daily. Must feel fast and clean.
+
+### Layout
+
+Left sidebar (nav). Right: chat panel (full remaining width).
+Chat panel: max-width 780px, centered inside content area.
+
+### Chat Panel Structure
+
+**Header (56px):**
+- Left: "Chat" label (--text-lg, 600 weight)
+- Right: session selector — pill button showing current session ("default" or custom name), clicking opens a dropdown of recent sessions
+
+**Messages area (flex-grow, overflow-y scroll):**
+- Padding: 24px top/bottom, 0 sides
+- Empty state (no docs): soft centered message with icon + "Upload your first document to start chatting." + Upload button
+- Empty state (docs exist, no messages): "What would you like to know?" in dim text, center-aligned
+
+**Message bubble — User:**
+- Alignment: right
+- bg: --compass-blue-dim, border: 1px solid rgba(79,142,247,0.3)
+- border-radius: 16px 16px 4px 16px
+- padding: 12px 16px
+- text: --compass-white
+
+**Message bubble — Compass (assistant):**
+- Alignment: left
+- bg: --compass-surface, border: 1px solid --compass-border
+- border-radius: 16px 16px 16px 4px
+- padding: 16px 18px
+- text: --compass-text
+
+Inside Compass bubble:
+1. Answer text (markdown rendered: **bold**, `code`, bullet lists)
+2. Sources row (appears below answer, separated by a 1px line):
+   - Label: "Sources" (--text-xs, --compass-text-dim)
+   - Source chips: pill badges showing doc_name + section. Clickable → opens doc detail drawer
+   - Example chip: 📄 servicios.md — Paquetes
+3. Suggestion block (appears when suggestion is present):
+   - Separated from answer by 8px gap
+   - Left border: 3px solid --compass-purple
+   - bg: rgba(167,139,250,0.07)
+   - padding: 10px 14px
+   - Icon: 💡 (or a light-bulb SVG in --compass-purple)
+   - Text: "Suggestion: [suggestion text]" (--text-sm, --compass-text)
+   - Action: "Document this →" link (--compass-purple, underlined on hover)
+
+**Loading state:** 3 animated dots (pulsing, --compass-blue)
+
+**Input area (bottom, sticky):**
+- bg: --compass-void, border-top: 1px solid --compass-border
+- padding: 16px 24px
+- Textarea (auto-resize, max 4 lines):
+  - placeholder: "Ask anything about your company..."
+  - bg: --compass-surface
+  - border: 1px solid --compass-border
+  - border-radius: 12px
+  - padding: 12px 48px 12px 16px
+- Send button: positioned inside textarea, right side, 32x32, circular
+  - Icon: arrow-up
+  - bg: --compass-blue when text present, --compass-muted when empty
+- Below textarea (8px gap): small row showing "Session: default · 3 messages" in --text-xs --compass-text-dim
+
+**Session picker dropdown:**
+- Floating panel (--compass-elevated, --shadow-md)
+- List of sessions: name + last message preview + timestamp
+- Bottom action: "+ New session"
+
+---
+
+## SCREEN 3 — KNOWLEDGE BASE
+
+Manage all indexed documents. Full-page layout.
+
+**Header:**
+- Title: "Knowledge Base"
+- Right actions: "Upload document" (primary button) + search input (expandable)
+
+**Stats bar (below header):**
+- 3 stat pills: "12 Documents", "47 Pages indexed", "Last updated 2h ago"
+- bg: --compass-surface, border: 1px solid --compass-border, border-radius: --radius-full
+- padding: 6px 16px, displayed inline
+
+**Document grid (main area):**
+- 3-column grid on desktop (gap: 16px), 2-col tablet, 1-col mobile
+- Each card (--compass-surface, --radius-md, border: 1px solid --compass-border):
+  - Top: file type icon (PDF = red, MD = blue, TXT = gray) + file name (600 weight)
+  - Middle: description (2 lines max, ellipsis) in --compass-text-dim
+  - Bottom row: type badge + page count + "Indexed" status badge (green)
+  - Hover: border-color --compass-blue, slight translateY(-2px) transition
+  - Three-dot menu (top-right): Delete, Re-index, Download
+
+**Empty state:**
+- Centered: large document icon (outline, --compass-muted) + "No documents yet" + "Upload your first document" button
+
+**Upload modal (triggered by button):**
+- Full-screen overlay (rgba(0,0,0,0.7) backdrop blur 4px)
+- Centered card (520px wide)
+- Large drop zone (same as onboarding step 2)
+- Supported formats note: "PDF, Markdown (.md), Text (.txt) — max 50MB"
+- Upload queue: shows file name + progress bar + status
+- Close button top-right
+
+**Document detail drawer (slides from right, 400px):**
+- Triggered by clicking a document card
+- Header: doc name + type badge + close button
+- Sections:
+  - Metadata: uploaded date, page count, file size
+  - Structure tree: collapsible tree showing PageIndex hierarchy (title → section → subsection)
+  - "Ask about this doc" shortcut: pre-fills chat with doc name context
+
+---
+
+## SCREEN 4 — CONNECTORS (INTEGRATIONS)
+
+Connect external sources. Post-MVP but design it now.
+
+**Layout:** full page with 2 sections
+
+**Connected section** (top):
+- Title: "Active connectors"
+- List of connected sources (card per connector):
+  - Logo + name + "Connected" green badge + last sync time
+  - Actions: "Sync now", "Disconnect"
+
+**Available connectors grid:**
+- Title: "Add a connector"
+- 3-column card grid. Each card:
+  - Logo (48px) + connector name + short description
+  - Status badge: "Coming soon" (amber) or "Connect" button (blue)
+
+**Available connectors to show:**
+- Google Drive (Connect)
+- Notion (Connect)
+- Slack (Coming soon)
+- GitHub (Coming soon)
+- Jira (Coming soon)
+- Confluence (Coming soon)
+- Dropbox (Coming soon)
+- OneDrive (Coming soon)
+
+**Connect flow (Google Drive example):**
+- Clicking "Connect" opens a modal:
+  1. OAuth redirect step (show "You'll be redirected to Google to authorize access")
+  2. Folder picker (after auth): tree of Drive folders with checkboxes
+  3. Sync schedule: "Sync every" dropdown (hourly / daily / manual)
+  4. Confirm button
+
+---
+
+## SCREEN 5 — DECISIONS LOG
+
+Track key company decisions. Stored as a special document type.
+
+**Layout:** full page, list view
+
+**Header:**
+- Title: "Decisions"
+- Right: "Log decision" (primary button)
+
+**Filter bar:**
+- Pills: All | This month | This quarter | By tag
+- Search input: "Search decisions..."
+
+**Decision list:**
+- Each decision item (card):
+  - Date (--text-sm, --compass-text-dim) + tags row (top)
+  - Decision title/summary (--text-base, 600 weight)
+  - Context: 2-line preview of the full decision context
+  - Bottom row: "Asked by [session]" + source link if it came from a chat
+  - Expand chevron to show full decision text
+  - Edit + Delete actions (on hover, right side)
+
+**Log decision modal:**
+- Title input
+- Date picker (defaults to today)
+- Tags input (comma-separated, pill display)
+- Decision text (textarea, 6 lines)
+- Context/reason (textarea, 4 lines, optional)
+- "Save decision" button
+
+**Empty state:**
+- Icon: scales / balance SVG + "No decisions logged yet" + "Log your first decision"
+
+---
+
+## SCREEN 6 — INSIGHTS DASHBOARD
+
+Post-MVP. Show this as a "coming soon" screen with a teaser.
+
+**Layout:** full page
+
+**Coming soon overlay:**
+- bg: --compass-surface with subtle grid pattern overlay (5% opacity)
+- Centered content:
+  - Icon: bar chart / brain hybrid SVG (--compass-purple, 64px)
+  - Headline: "Insights are on their way" (--text-2xl)
+  - Subtext: "Compass will proactively surface patterns, gaps, and trends in your company knowledge."
+  - Email capture: "Get notified when it's ready" + email input + "Notify me" button
+
+**Background teaser (blurred, opacity 30%):**
+Show ghost UI of what Insights will look like:
+- 3 stat cards: "12 knowledge gaps found", "5 decisions this month", "Most asked: services"
+- A bar chart (blurred)
+- A feed of insight cards
+
+---
+
+## SCREEN 7 — ALERTS / PROACTIVE FEED
+
+Where Compass's suggestions accumulate over time.
+
+**Layout:** full page, feed-style
+
+**Header:**
+- Title: "Compass Suggestions"
+- Subtext: "Things Compass thinks you should document"
+- Right: "Mark all read" link
+
+**Feed items (each item = a card):**
+- Top row: purple 💡 icon + timestamp (relative: "2 hours ago")
+- Suggestion text (main body, --text-base)
+- Context: "Came from a chat about: [question that triggered it]" (--text-sm, --compass-text-dim)
+- Actions row: "Create document" (primary small), "Dismiss" (text button, --compass-text-dim)
+- Status: unread items have left border 3px --compass-purple; read items are dimmer
+
+**Dismissed section:**
+- Collapsible: "8 dismissed suggestions" with expand chevron
+- Shows dimmed cards with "Restore" option
+
+**Empty state (no suggestions yet):**
+- 💡 large icon + "No suggestions yet" + "Start chatting to get Compass's first insight"
+
+---
+
+## SCREEN 8 — SETTINGS
+
+**Layout:** settings sidebar (200px) + content panel
+
+**Settings sections (nav items):**
+1. General
+2. Model
+3. Storage
+4. Integrations (link to Connectors screen)
+5. Team (Coming soon)
+6. Danger Zone
+
+### 8.1 General
+- Company name (text input)
+- Language: dropdown (English, Spanish — more TBD)
+- Theme: toggle (Dark — only option for now, "Light coming soon" grayed out)
+- "Save changes" button
+
+### 8.2 Model
+- LLM Provider: display "Ollama (local)" with info tooltip
+- Model name: text input (default: current COMPASS_MODEL)
+- API Base URL: text input (default: http://localhost:11434)
+- Test connection button: shows green "✓ Connected" or red "✗ Failed"
+- "Save" button
+
+### 8.3 Storage
+- Docs path: current path display + "Change" button (file picker)
+- Workspace path: current path + "Change" button
+- Index stats: "12 documents, 47 pages, 2.3MB"
+- "Re-index all documents" button (with confirmation dialog)
+
+### 8.4 Danger Zone
+- Red card with warning border
+- "Delete all indexed data" — destroys workspace, keeps source files
+- "Reset Compass" — wipes everything including source files
+- Each action requires typing "CONFIRM" in an input before enabling the delete button
+
+---
+
+## SCREEN 9 — MULTI-TENANT DASHBOARD (FUTURE)
+
+For when Compass serves multiple companies from one instance.
+
+**Layout:** full page
+
+**Company switcher (top of sidebar):**
+- Current company logo + name + dropdown arrow
+- Dropdown shows list of companies user manages
+
+**Dashboard view:**
+- Table of companies: name, docs count, last activity, status badge
+- Per-company actions: Open, Settings, Archive
+
+**Company card (expanded):**
+- Same stats as single-tenant knowledge base
+- Quick-jump to that company's chat
+
+---
+
+INTERACTION PATTERNS
+--------------------
+
+**File upload (all upload surfaces):**
+1. Drag file over drop zone → border turns --compass-blue, bg subtle blue tint
+2. Drop → file name appears + spinner + "Indexing..."
+3. Success → green checkmark + "Indexed" badge
+4. Error → red X + error message inline
+
+**Chat send:**
+1. User types → send button activates (blue)
+2. Submit → user message appears instantly (optimistic)
+3. Loading indicator (3 dots) appears in assistant bubble position
+4. Response streams in (typewriter effect) OR appears at once
+5. Sources + suggestion appear after answer fades in
+
+**Suggestion → Document:**
+1. User clicks "Document this →" in suggestion
+2. Modal opens with pre-filled title + text from suggestion
+3. User edits, saves
+4. Toast: "Document saved to Knowledge Base"
+
+**Toast notifications:**
+- Bottom-right, 320px wide
+- Types: success (green left border), error (red), info (blue), warning (amber)
+- Auto-dismiss: 4 seconds
+- Manual dismiss: X button
+
+**Confirmation dialogs:**
+- For destructive actions only
+- Center modal (400px), headline + description + cancel + confirm (red for destructive)
+
+---
+
+RESPONSIVE BEHAVIOR
+-------------------
+
+### Desktop (≥1280px)
+Full sidebar + chat panel max-width 780px centered
+
+### Tablet (768–1279px)
+Sidebar collapses to icon-only (48px). Click icon to expand overlay sidebar.
+Chat panel full width.
+
+### Mobile (<768px)
+Sidebar replaced by bottom tab bar (5 icons: Chat, Docs, Decisions, Alerts, Settings).
+Chat input pinned to bottom above tab bar.
+No drawer animations — full page navigation instead.
+
+---
+
+ACCESSIBILITY
+-------------
+- All interactive elements: visible focus ring (2px solid --compass-blue, 2px offset)
+- Color is never the only indicator of state — always paired with icon or text
+- aria-label on icon-only buttons
+- Keyboard navigation: Tab through all interactive elements, Enter/Space to activate
+- Reduced motion: respect prefers-reduced-motion — disable transitions and animations
+- Contrast: all text meets WCAG AA (4.5:1 for body, 3:1 for large text)
+
+---
+
+IMPLEMENTATION NOTES
+--------------------
+- Tech stack: React 19 + Vite + TypeScript
+- Styling: Tailwind CSS with custom CSS variables for design tokens
+- Icons: Lucide React (consistent, clean, outline style)
+- Animations: Framer Motion for page transitions and micro-interactions
+- State: Zustand for global state (session, documents) + React Query for API calls
+- Backend: FastAPI at localhost:8000 (already built)
+- API endpoints in use: GET /health, POST /chat, POST /upload, GET /documents
+
+Build the full application. Start with the shell (sidebar + layout), then Chat screen, then Knowledge Base, then Settings. The other screens can be stubs with their empty states.
